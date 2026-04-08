@@ -48,14 +48,6 @@
   <img alt="github-snake" src="https://raw.githubusercontent.com/tobiasmeyhoefer/tobiasmeyhoefer/output/github-snake.svg" />
 </picture>
 
-## 📊 GitHub Stats
 
-<p>
-  <img align="left" src="https://github-readme-stats.vercel.app/api/top-langs?username=franky1107&show_icons=true&locale=en&layout=compact" alt="Top Langs" />
-</p>
-
-<p>&nbsp;
-  <img align="center" src="https://github-readme-stats.vercel.app/api?username=franky1107&show_icons=true&locale=en" alt="GitHub Stats" />
-</p>
 
 

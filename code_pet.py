@@ -12,20 +12,24 @@ QUERY = """query($login:String!){user(login:$login){
   contributionsCollection{contributionCalendar{totalContributions
     weeks{contributionDays{contributionCount date}}}}}}"""
 
-BG, CARD, LINE = "#0a1020", "#111a2e", "#1e2a44"
-INK, MUTED, TEAL, AMBER = "#e8ecf4", "#8592ad", "#2dd4bf", "#f5a524"
-LEVELS = ["#16213a", "#134e4a", "#0f766e", "#14b8a6", "#5eead4"]
+BG, CARD, LINE = "#0d0605", "#140806", "#4a1a0e"
+INK, MUTED, TEAL, AMBER = "#fff4e6", "#e0b49a", "#ff7a1a", "#ffd23f"
+LEVELS = ["#2a120c", "#7a1d0a", "#d62a1e", "#ff7a1a", "#ffd23f"]
+# background gradient stops: black -> red -> orange -> yellow
+GRADIENT = [("0", "#0d0605"), (".45", "#5a0e08"), (".75", "#d9480f"), ("1", "#ffb020")]
 
-# Original pixel sprite. b=body d=shade e=eye w=shine m=mouth g=leaf
-ADULT = ["....g..g....", ".....gg.....", "....bbbb....", "..bbbbbbbb..",
-         ".bbbbbbbbbb.", ".bbewbbewbb.", ".bbeebbeebb.", ".bbbbbbbbbb.",
-         ".bbbbmmbbbb.", "..bbbbbbbb..", "..dd....dd..", "............"]
-BABY = ["............", "............", "............", "......g.....",
-        "....bbbb....", "...bbbbbb...", "...bewbew...", "...beebee...",
-        "...bbmmbb...", "....bbbb....", "....d..d....", "............"]
-EGG = ["............", "............", ".....bb.....", "....bbbb....",
-       "...bbgbbb...", "...bbbbbb...", "..bbbbbgbb..", "..bgbbbbbb..",
-       "..bbbbbbbb..", "...bbbbbb...", "....bbbb....", "............"]
+# Original pixel fire fox with swag specs.
+# b=fur d=outline c=cream r=red g=yellow flame s=specs w=lens shine n=nose
+ADULT = ["..d......d......", ".dbd....dbd...g.", ".drbd..dbrd..gg.", ".drbbddbbrd.grg.",
+         "dbbbbbbbbbbd.grg", "sssssssssssss.gr", "dswsssbswsssd.rb", "dsssssbsssssd.rb",
+         "dbbbbbbbbbbbd.bb", "dccbbbnnbbbccdbb", ".dccccccccccd.db", "..dccccccccd.dbd",
+         "...ddbbbbdd.dbd.", "...dbccccbddbd..", "...dbccccbbbd...", "...ddddddddd...."]
+BABY = ["............", "..d....d....", ".dbd..dbd...", ".drbddbrd.g.",
+        "dbbbbbbbbdgg", "ssssssssss.r", "dswsbbswsd.b", "dbbbbbbbbd.b",
+        "dccbnnbccddb", ".dccccccd.d.", "..dbbbbd....", "..dddddd...."]
+EGG = ["............", "............", ".....dd.....", "....dbbd....",
+       "...dbgbbd...", "...dbbbbd...", "..dbbbbgbd..", "..dgbbbbbd..",
+       "..dbbbbbbd..", "...dbbbbd...", "....dddd....", "............"]
 
 
 def fetch(login):
@@ -72,19 +76,20 @@ def stats(user, today):
     }
 
 
-def sprite(stage, asleep, x, y, px=10):
+def sprite(stage, asleep, x, y):
     rows = {"egg": EGG, "baby": BABY, "adult": ADULT}[stage]
-    if asleep and stage != "egg":  # closed eyes: drop the top eye row
-        rows = [r.replace("e", "b").replace("w", "b") if "w" in r else r for r in rows]
-    pal = {"b": TEAL, "d": "#0f766e", "e": BG, "w": "#ffffff", "m": "#0f766e", "g": AMBER}
-    rects = [f'<rect x="{x + c * px}" y="{y + r * px}" width="{px}" height="{px}" fill="{pal[ch]}"/>'
-             for r, row in enumerate(rows) for c, ch in enumerate(row) if ch != "."]
-    return "".join(rects)
+    if asleep:  # lenses go dark while it naps
+        rows = [r.replace("w", "s") for r in rows]
+    px = 128 // len(rows[0])
+    pal = {"b": "#ff7a1a", "d": "#3a0a05", "c": "#fff4e6", "r": "#d62a1e", "g": AMBER,
+           "s": "#111111", "w": "#ffffff", "n": "#1a0a05"}
+    return "".join(f'<rect x="{x + c * px}" y="{y + r * px}" width="{px}" height="{px}" fill="{pal[ch]}"/>'
+                   for r, row in enumerate(rows) for c, ch in enumerate(row) if ch != ".")
 
 
 def card(x, y, w, h, body, label=None):
     lbl = f'<text x="{x + 24}" y="{y + 32}" class="lbl">{label}</text>' if label else ""
-    return f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="16" fill="{CARD}" stroke="{LINE}"/>{lbl}{body}'
+    return f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="16" fill="{CARD}" fill-opacity=".86" stroke="{LINE}"/>{lbl}{body}'
 
 
 def render(user, s):
@@ -161,9 +166,10 @@ text{{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:{INK
 @keyframes bob{{50%{{transform:translateY(-6px)}}}} @keyframes pulse{{50%{{opacity:.4}}}}
 @keyframes z{{0%{{opacity:0}}50%{{opacity:1}}100%{{opacity:0;transform:translateY(-10px)}}}}
 </style>
-<rect width="{W + 40}" height="{H}" rx="20" fill="{BG}"/>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">{"".join(f'<stop offset="{o}" stop-color="{c}"/>' for o, c in GRADIENT)}</linearGradient></defs>
+<rect width="{W + 40}" height="{H}" rx="20" fill="url(#bg)"/>
 <g transform="translate(20 20)">{"".join(out)}</g>
-<text x="20" y="{H - 16}" class="small">updated {stamp} · fed by real contributions</text>
+<text x="20" y="{H - 16}" class="small" style="fill:{INK}">updated {stamp} · fed by real contributions</text>
 </svg>'''
 
 

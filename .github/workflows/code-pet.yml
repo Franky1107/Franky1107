@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths-ignore: [assets/code-pet.svg]
+    paths-ignore: ["assets/**"]
 
 permissions:
   contents: write
@@ -26,5 +26,5 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
-          git add assets/code-pet.svg
+          git add assets/
           git diff --cached --quiet || (git commit -m "Feed the code pet" && git push)

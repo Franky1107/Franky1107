@@ -1,62 +1,59 @@
-<p align="center">
-  <img src="./assets/banner.svg" alt="Sourav Mallick — data engineering, AI and intelligent systems" width="100%" />
+<h1 align="center">Hi 👋, I'm Sourav</h1>
+<h3 align="center">Representing myself in the journey of learning</h3>
+
+<p align="left">
+  <img src="https://komarev.com/ghpvc/?username=franky1107&label=Profile%20views&color=0e75b6&style=flat" alt="franky1107" />
 </p>
 
-<p align="center">
-  <a href="https://portfolionext-drab-gamma.vercel.app"><img src="https://img.shields.io/badge/portfolio-live-f5a524?style=flat-square&labelColor=0b0e12" alt="Portfolio" /></a>
-  <img src="https://komarev.com/ghpvc/?username=franky1107&label=views&color=2dd4bf&style=flat-square" alt="Profile views" />
-</p>
 
-<p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=500&size=18&duration=3200&pause=900&color=2DD4BF&center=true&vCenter=true&width=620&lines=Building+data+pipelines+with+PySpark+%2B+Databricks;Learning+Kafka%2C+FastAPI+%26+MongoDB+in+public;Chatting+with+my+notes+via+RAG;Shipping+side+projects+on+Vercel" alt="Typing intro" />
-</p>
 
----
+## 💻 Tech Stack
 
-### `> whoami`
+![PySpark](https://img.shields.io/badge/PySpark-E25A1C.svg?style=for-the-badge&logo=apachespark&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB.svg?style=for-the-badge&logo=python&logoColor=white)
+![Databricks](https://img.shields.io/badge/Databricks-FF3621.svg?style=for-the-badge&logo=databricks&logoColor=white)
+![Microsoft Azure](https://img.shields.io/badge/Microsoft_Azure-0078D4.svg?style=for-the-badge&logo=microsoftazure&logoColor=white)
+![Jupyter Notebook](https://img.shields.io/badge/Jupyter_Notebook-F37626.svg?style=for-the-badge&logo=jupyter&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-232F3E.svg?style=for-the-badge&logo=amazonaws&logoColor=white)
+![Unix](https://img.shields.io/badge/Unix-000000.svg?style=for-the-badge&logo=unix&logoColor=white)
+![Linux](https://img.shields.io/badge/Linux-FCC624.svg?style=for-the-badge&logo=linux&logoColor=black)
+![Power BI](https://img.shields.io/badge/Power_BI-F2C811.svg?style=for-the-badge&logo=powerbi&logoColor=black)
+![Data Lake](https://img.shields.io/badge/Data_Lake-0078D4.svg?style=for-the-badge&logo=databricks&logoColor=white)
+![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
+![C](https://img.shields.io/badge/C-%2300599C.svg?style=for-the-badge&logo=c&logoColor=white)
+![CSS3](https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white)
+![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
+![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)
+![PowerShell](https://img.shields.io/badge/PowerShell-%235391FE.svg?style=for-the-badge&logo=powershell&logoColor=white)
+![Vercel](https://img.shields.io/badge/vercel-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazon-aws&logoColor=white)
+![Google Cloud](https://img.shields.io/badge/GoogleCloud-%234285F4.svg?style=for-the-badge&logo=google-cloud&logoColor=white)
+![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)
+![Next JS](https://img.shields.io/badge/Next-black?style=for-the-badge&logo=next.js&logoColor=white)
+![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Figma](https://img.shields.io/badge/figma-%23F24E1E.svg?style=for-the-badge&logo=figma&logoColor=white)
+![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white)
+![MicrosoftSQLServer](https://img.shields.io/badge/Microsoft%20SQL%20Server-CC2927?style=for-the-badge&logo=microsoft%20sql%20server&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
+![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-039BE5?style=for-the-badge&logo=Firebase&logoColor=white)
+![Notion](https://img.shields.io/badge/Notion-%23000000.svg?style=for-the-badge&logo=notion&logoColor=white)
+![Python](https://img.shields.io/badge/python-%2314354C.svg?style=for-the-badge&logo=python&logoColor=white)
+![Arduino](https://img.shields.io/badge/arduino-%2300979D.svg?style=for-the-badge&logo=arduino&logoColor=white)
 
-```python
-class Sourav:
-    role        = "Software Engineer"
-    focus       = ["Data Engineering", "AI", "Intelligent Systems"]
-    building    = ["PortfolioNEXT", "RAG notes app", "FastAPI Notes API"]
-    learning    = ["Kafka", "FastAPI", "MongoDB", "OpenShift"]
-    timezone    = "IST (UTC+5:30)"
 
-    def motto(self):
-        return "Learn by building. Break it on purpose. Ship it."
-```
 
-### `> ls ./stack`
 
-| | |
-|:--|:--|
-| **data** | ![PySpark](https://img.shields.io/badge/PySpark-E25A1C?style=flat-square&logo=apachespark&logoColor=white) ![Databricks](https://img.shields.io/badge/Databricks-FF3621?style=flat-square&logo=databricks&logoColor=white) ![Azure Data Lake](https://img.shields.io/badge/Data_Lake-0078D4?style=flat-square&logo=microsoftazure&logoColor=white) ![Power BI](https://img.shields.io/badge/Power_BI-F2C811?style=flat-square&logo=powerbi&logoColor=black) ![Jupyter](https://img.shields.io/badge/Jupyter-F37626?style=flat-square&logo=jupyter&logoColor=white) |
-| **languages** | <img src="https://skillicons.dev/icons?i=py,java,c,js,ts,powershell&theme=dark" height="40" /> |
-| **cloud & ops** | <img src="https://skillicons.dev/icons?i=azure,aws,gcp,linux,vercel,git&theme=dark" height="40" /> |
-| **databases** | <img src="https://skillicons.dev/icons?i=postgres,mongodb,firebase&theme=dark" height="40" /> ![SQL Server](https://img.shields.io/badge/SQL_Server-CC2927?style=flat-square&logo=microsoftsqlserver&logoColor=white) |
-| **web** | <img src="https://skillicons.dev/icons?i=nextjs,react,nodejs,express,vite,tailwind,html,css&theme=dark" height="40" /> |
-| **tools** | <img src="https://skillicons.dev/icons?i=figma,notion,arduino&theme=dark" height="40" /> |
-
-### `> ls ./projects`
-
-| project | what it is |
-|:--|:--|
-| [**PortfolioNEXT**](https://github.com/Franky1107/PortfolioNEXT) | My portfolio — Next.js, TypeScript, Tailwind, GSAP scroll animations. [Live ↗](https://portfolionext-drab-gamma.vercel.app) |
-| [**FastAPI**](https://github.com/Franky1107/FastAPI) | A Notes API that grows one phase at a time while I learn FastAPI end to end |
-| [**Iphone_widget**](https://github.com/Franky1107/Iphone_widget) | Custom iPhone home-screen widgets built with Scriptable |
-| [**Portfolio**](https://github.com/Franky1107/Portfolio) | The original portfolio — where it all started |
-
-### `> git log --graph`
-
-<p align="center">
-  <img src="https://streak-stats.demolab.com?user=Franky1107&theme=dark&hide_border=true&background=0B0E12&ring=F5A524&fire=F5A524&currStreakLabel=2DD4BF&sideLabels=9AA4B1&dates=6B7683&currStreakNum=F2EFE9&sideNums=F2EFE9" alt="GitHub streak" />
-</p>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Franky1107/Franky1107/output/snake-dark.svg" />
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Franky1107/Franky1107/output/snake.svg" />
-  <img alt="Contribution snake" src="https://raw.githubusercontent.com/Franky1107/Franky1107/output/snake.svg" />
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/tobiasmeyhoefer/tobiasmeyhoefer/output/github-snake-dark.svg" />
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/tobiasmeyhoefer/tobiasmeyhoefer/output/github-snake.svg" />
+  <img alt="github-snake" src="https://raw.githubusercontent.com/tobiasmeyhoefer/tobiasmeyhoefer/output/github-snake.svg" />
 </picture>
 
-<p align="center"><sub><code>exit 0</code> · thanks for stopping by</sub></p>
+
+
+

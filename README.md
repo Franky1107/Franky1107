@@ -1,256 +1,54 @@
-From 4c6dcb1134c860deb59798e35fef2dd4cf34a1f8 Mon Sep 17 00:00:00 2001
-From: Sourav Mallick <Franky1107@users.noreply.github.com>
-Date: Sat, 21 Nov 2026 14:19:22 +0000
-Subject: [PATCH] Replace snake with code pet
+<h1 align="center">Hi 👋, I'm Sourav</h1>
+<h3 align="center">Representing myself in the journey of learning</h3>
 
----
- .github/workflows/code-pet.yml |  30 ++++++
- README.md                      |   9 +-
- code_pet.py                    | 179 +++++++++++++++++++++++++++++++++
- 3 files changed, 213 insertions(+), 5 deletions(-)
- create mode 100644 .github/workflows/code-pet.yml
- create mode 100644 code_pet.py
+<p align="left">
+  <img src="https://komarev.com/ghpvc/?username=franky1107&label=Profile%20views&color=0e75b6&style=flat" alt="franky1107" />
+</p>
 
-diff --git a/.github/workflows/code-pet.yml b/.github/workflows/code-pet.yml
-new file mode 100644
-index 0000000..f5ec533
---- /dev/null
-+++ b/.github/workflows/code-pet.yml
-@@ -0,0 +1,30 @@
-+name: Code pet
-+
-+on:
-+  schedule:
-+    - cron: "30 0 * * *" # daily, ~6am IST
-+  workflow_dispatch:
-+  push:
-+    branches: [main]
-+    paths-ignore: [assets/code-pet.svg]
-+
-+permissions:
-+  contents: write
-+
-+jobs:
-+  render:
-+    runs-on: ubuntu-latest
-+    steps:
-+      - uses: actions/checkout@v4
-+      - uses: actions/setup-python@v5
-+        with:
-+          python-version: "3.12"
-+      - run: python code_pet.py ${{ github.repository_owner }}
-+        env:
-+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-+      - name: Commit if changed
-+        run: |
-+          git config user.name "github-actions[bot]"
-+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
-+          git add assets/code-pet.svg
-+          git diff --cached --quiet || (git commit -m "Feed the code pet" && git push)
-diff --git a/README.md b/README.md
-index aa003c1..9ed972e 100644
---- a/README.md
-+++ b/README.md
-@@ -48,11 +48,10 @@
- 
- 
- 
--<picture>
--  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/tobiasmeyhoefer/tobiasmeyhoefer/output/github-snake-dark.svg" />
--  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/tobiasmeyhoefer/tobiasmeyhoefer/output/github-snake.svg" />
--  <img alt="github-snake" src="https://raw.githubusercontent.com/tobiasmeyhoefer/tobiasmeyhoefer/output/github-snake.svg" />
--</picture>
-+<p align="center">
-+  <img src="./assets/code-pet.svg" alt="My code pet and GitHub stats" width="100%" />
-+</p>
-+<p align="center"><sub>My pet grows with my real contributions: a 13-week streak fills its meter, a year of steady work makes it glow, and two quiet weeks put it to sleep.</sub></p>
- 
- 
- 
-diff --git a/code_pet.py b/code_pet.py
-new file mode 100644
-index 0000000..7ac6bc0
---- /dev/null
-+++ b/code_pet.py
-@@ -0,0 +1,179 @@
-+"""Render assets/code-pet.svg from live GitHub data.
-+
-+Usage: GH_TOKEN=... python code_pet.py <login>
-+       python code_pet.py --fixture data.json   (offline render for testing)
-+"""
-+import base64, datetime as dt, html, json, os, sys, urllib.request
-+
-+QUERY = """query($login:String!){user(login:$login){
-+  name login bio avatarUrl(size:160) createdAt followers{totalCount}
-+  repositories(ownerAffiliations:OWNER, privacy:PUBLIC, isFork:false, first:100){
-+    totalCount nodes{stargazerCount languages(first:10){edges{size node{name color}}}}}
-+  contributionsCollection{contributionCalendar{totalContributions
-+    weeks{contributionDays{contributionCount date}}}}}}"""
-+
-+BG, CARD, LINE = "#0a1020", "#111a2e", "#1e2a44"
-+INK, MUTED, TEAL, AMBER = "#e8ecf4", "#8592ad", "#2dd4bf", "#f5a524"
-+LEVELS = ["#16213a", "#134e4a", "#0f766e", "#14b8a6", "#5eead4"]
-+
-+# Original pixel sprite. b=body d=shade e=eye w=shine m=mouth g=leaf
-+ADULT = ["....g..g....", ".....gg.....", "....bbbb....", "..bbbbbbbb..",
-+         ".bbbbbbbbbb.", ".bbewbbewbb.", ".bbeebbeebb.", ".bbbbbbbbbb.",
-+         ".bbbbmmbbbb.", "..bbbbbbbb..", "..dd....dd..", "............"]
-+BABY = ["............", "............", "............", "......g.....",
-+        "....bbbb....", "...bbbbbb...", "...bewbew...", "...beebee...",
-+        "...bbmmbb...", "....bbbb....", "....d..d....", "............"]
-+EGG = ["............", "............", ".....bb.....", "....bbbb....",
-+       "...bbgbbb...", "...bbbbbb...", "..bbbbbgbb..", "..bgbbbbbb..",
-+       "..bbbbbbbb..", "...bbbbbb...", "....bbbb....", "............"]
-+
-+
-+def fetch(login):
-+    req = urllib.request.Request("https://api.github.com/graphql",
-+        data=json.dumps({"query": QUERY, "variables": {"login": login}}).encode(),
-+        headers={"Authorization": f"bearer {os.environ['GH_TOKEN']}"})
-+    data = json.load(urllib.request.urlopen(req))
-+    if "errors" in data:
-+        sys.exit(f"GitHub API error: {data['errors']}")
-+    user = data["data"]["user"]
-+    with urllib.request.urlopen(user["avatarUrl"]) as r:
-+        user["avatar_b64"] = base64.b64encode(r.read()).decode()
-+    return user
-+
-+
-+def stats(user, today):
-+    weeks = user["contributionsCollection"]["contributionCalendar"]["weeks"]
-+    days = [d for w in weeks for d in w["contributionDays"] if d["date"] <= today.isoformat()]
-+    counts = [d["contributionCount"] for d in days]
-+    streak, i = 0, len(counts) - 1
-+    if counts and counts[-1] == 0:
-+        i -= 1  # today not done yet doesn't break the streak
-+    while i >= 0 and counts[i] > 0:
-+        streak, i = streak + 1, i - 1
-+    recent = weeks[-13:]
-+    active_13 = sum(any(d["contributionCount"] for d in w["contributionDays"]) for w in recent)
-+    active_52 = sum(any(d["contributionCount"] for d in w["contributionDays"]) for w in weeks[-52:])
-+    total_13 = sum(d["contributionCount"] for w in recent for d in w["contributionDays"])
-+    langs = {}
-+    for repo in user["repositories"]["nodes"]:
-+        for e in repo["languages"]["edges"]:
-+            n = e["node"]["name"]
-+            langs.setdefault(n, [0, e["node"]["color"] or MUTED])[0] += e["size"]
-+    top = sorted(langs.items(), key=lambda kv: -kv[1][0])[:5]
-+    lang_total = sum(v[0] for _, v in top) or 1
-+    return {
-+        "grid": recent, "streak": streak, "active_13": active_13,
-+        "year_total": user["contributionsCollection"]["contributionCalendar"]["totalContributions"],
-+        "asleep": sum(counts[-14:]) == 0,
-+        "glow": active_52 >= 40,
-+        "stage": "egg" if total_13 < 10 else "baby" if total_13 < 60 else "adult",
-+        "stars": sum(r["stargazerCount"] for r in user["repositories"]["nodes"]),
-+        "langs": [(n, v[1], v[0] / lang_total) for n, v in top],
-+    }
-+
-+
-+def sprite(stage, asleep, x, y, px=10):
-+    rows = {"egg": EGG, "baby": BABY, "adult": ADULT}[stage]
-+    if asleep and stage != "egg":  # closed eyes: drop the top eye row
-+        rows = [r.replace("e", "b").replace("w", "b") if "w" in r else r for r in rows]
-+    pal = {"b": TEAL, "d": "#0f766e", "e": BG, "w": "#ffffff", "m": "#0f766e", "g": AMBER}
-+    rects = [f'<rect x="{x + c * px}" y="{y + r * px}" width="{px}" height="{px}" fill="{pal[ch]}"/>'
-+             for r, row in enumerate(rows) for c, ch in enumerate(row) if ch != "."]
-+    return "".join(rects)
-+
-+
-+def card(x, y, w, h, body, label=None):
-+    lbl = f'<text x="{x + 24}" y="{y + 32}" class="lbl">{label}</text>' if label else ""
-+    return f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="16" fill="{CARD}" stroke="{LINE}"/>{lbl}{body}'
-+
-+
-+def render(user, s):
-+    esc = lambda t: html.escape(t or "", quote=True)
-+    W = 800
-+    out = []
-+
-+    # 1. pet card
-+    level = s["active_13"]
-+    mood = "asleep · a commit wakes it" if s["asleep"] else f'{s["stage"]} · {s["streak"]}-day streak'
-+    glow = f'<circle cx="150" cy="140" r="78" fill="{TEAL}" opacity=".18" class="pulse"/>' if s["glow"] else ""
-+    zzz = (f'<text x="230" y="80" class="zzz" fill="{MUTED}">z</text>'
-+           f'<text x="246" y="62" class="zzz d2" fill="{MUTED}">Z</text>') if s["asleep"] else ""
-+    grid = []
-+    for wi, w in enumerate(s["grid"]):
-+        for di, d in enumerate(w["contributionDays"]):
-+            c = d["contributionCount"]
-+            lv = 0 if c == 0 else 1 if c < 3 else 2 if c < 6 else 3 if c < 10 else 4
-+            grid.append(f'<rect x="{340 + wi * 30}" y="{56 + di * 22}" width="24" height="18" rx="4" fill="{LEVELS[lv]}"/>')
-+    meter_w = 390 * level / 13
-+    out.append(card(0, 0, W, 280,
-+        f'<text x="24" y="32" class="lbl">CODE PET · LEVEL {level}</text>{glow}'
-+        f'<g class="{"" if s["asleep"] else "bob"}">{sprite(s["stage"], s["asleep"], 90, 80)}</g>{zzz}'
-+        f'<text x="150" y="232" class="small" text-anchor="middle">{esc(mood)}</text>'
-+        + "".join(grid) +
-+        f'<text x="340" y="232" class="small">{level} / 13 active weeks</text>'
-+        f'<rect x="340" y="244" width="390" height="8" rx="4" fill="{LEVELS[0]}"/>'
-+        f'<rect x="340" y="244" width="{meter_w:.0f}" height="8" rx="4" fill="{AMBER}"/>'))
-+
-+    # 2. profile card
-+    y = 300
-+    avatar = (f'<clipPath id="av"><circle cx="{W - 76}" cy="{y + 70}" r="44"/></clipPath>'
-+              f'<image href="data:image/png;base64,{user.get("avatar_b64", "")}" x="{W - 120}" y="{y + 26}" '
-+              f'width="88" height="88" clip-path="url(#av)"/>') if user.get("avatar_b64") else ""
-+    bio = esc((user.get("bio") or "")[:70])
-+    out.append(card(0, y, W, 140,
-+        f'<text x="24" y="{y + 32}" class="lbl">PROFILE</text>'
-+        f'<text x="24" y="{y + 76}" class="big">{esc(user.get("name") or user["login"])}</text>'
-+        f'<text x="24" y="{y + 102}" class="small">@{esc(user["login"])}</text>'
-+        f'<text x="24" y="{y + 124}" class="small">{bio}</text>{avatar}'))
-+
-+    # 3. two stat cards
-+    y = 460
-+    for i, (lbl, val, sub) in enumerate([
-+        ("CONTRIBUTIONS", f'{s["year_total"]:,}', "in the last year"),
-+        ("REPOS · STARS", f'{user["repositories"]["totalCount"]} · {s["stars"]}', f'{user["followers"]["totalCount"]} followers'),
-+    ]):
-+        x = i * 410
-+        out.append(card(x, y, 390, 120,
-+            f'<text x="{x + 24}" y="{y + 32}" class="lbl">{lbl}</text>'
-+            f'<text x="{x + 24}" y="{y + 80}" class="big">{val}</text>'
-+            f'<text x="{x + 24}" y="{y + 104}" class="small">{sub}</text>'))
-+
-+    # 4. languages
-+    y = 600
-+    bars = []
-+    for i, (name, color, share) in enumerate(s["langs"]):
-+        by = y + 56 + i * 30
-+        bars.append(f'<text x="24" y="{by + 12}" class="small">{esc(name)}</text>'
-+                    f'<rect x="160" y="{by}" width="560" height="14" rx="7" fill="{LEVELS[0]}"/>'
-+                    f'<rect x="160" y="{by}" width="{max(560 * share, 8):.0f}" height="14" rx="7" fill="{color}"/>'
-+                    f'<text x="{W - 24}" y="{by + 12}" class="small" text-anchor="end">{share:.0%}</text>')
-+    lang_h = 76 + 30 * len(s["langs"])
-+    out.append(card(0, y, W, lang_h, f'<text x="24" y="{y + 32}" class="lbl">TOP LANGUAGES</text>' + "".join(bars)))
-+
-+    H = y + lang_h + 76  # 20px outer padding + footer
-+    stamp = dt.date.today().strftime("%d %b %Y")
-+    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="{W + 40}" height="{H}" viewBox="0 0 {W + 40} {H}" role="img" aria-label="Code pet and GitHub stats for {esc(user["login"])}">
-+<style>
-+text{{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:{INK}}}
-+.lbl{{font-size:11px;letter-spacing:2px;fill:{MUTED}}} .small{{font-size:13px;fill:{MUTED}}}
-+.big{{font-size:28px;font-weight:700}} .zzz{{font-size:18px;animation:z 3s infinite}} .d2{{animation-delay:1.5s}}
-+.bob{{animation:bob 1.6s ease-in-out infinite}} .pulse{{animation:pulse 3s ease-in-out infinite}}
-+@keyframes bob{{50%{{transform:translateY(-6px)}}}} @keyframes pulse{{50%{{opacity:.4}}}}
-+@keyframes z{{0%{{opacity:0}}50%{{opacity:1}}100%{{opacity:0;transform:translateY(-10px)}}}}
-+</style>
-+<rect width="{W + 40}" height="{H}" rx="20" fill="{BG}"/>
-+<g transform="translate(20 20)">{"".join(out)}</g>
-+<text x="20" y="{H - 16}" class="small">updated {stamp} · fed by real contributions</text>
-+</svg>'''
-+
-+
-+if __name__ == "__main__":
-+    if sys.argv[1] == "--fixture":
-+        user = json.load(open(sys.argv[2]))
-+    else:
-+        user = fetch(sys.argv[1])
-+    os.makedirs("assets", exist_ok=True)
-+    s = stats(user, dt.date.today())
-+    with open("assets/code-pet.svg", "w", encoding="utf-8") as f:
-+        f.write(render(user, s))
-+    print(f'stage={s["stage"]} asleep={s["asleep"]} level={s["active_13"]} streak={s["streak"]}')
--- 
-2.43.0
+
+
+## 💻 Tech Stack
+
+![PySpark](https://img.shields.io/badge/PySpark-E25A1C.svg?style=for-the-badge&logo=apachespark&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB.svg?style=for-the-badge&logo=python&logoColor=white)
+![Databricks](https://img.shields.io/badge/Databricks-FF3621.svg?style=for-the-badge&logo=databricks&logoColor=white)
+![Microsoft Azure](https://img.shields.io/badge/Microsoft_Azure-0078D4.svg?style=for-the-badge&logo=microsoftazure&logoColor=white)
+![Jupyter Notebook](https://img.shields.io/badge/Jupyter_Notebook-F37626.svg?style=for-the-badge&logo=jupyter&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-232F3E.svg?style=for-the-badge&logo=amazonaws&logoColor=white)
+![Unix](https://img.shields.io/badge/Unix-000000.svg?style=for-the-badge&logo=unix&logoColor=white)
+![Linux](https://img.shields.io/badge/Linux-FCC624.svg?style=for-the-badge&logo=linux&logoColor=black)
+![Power BI](https://img.shields.io/badge/Power_BI-F2C811.svg?style=for-the-badge&logo=powerbi&logoColor=black)
+![Data Lake](https://img.shields.io/badge/Data_Lake-0078D4.svg?style=for-the-badge&logo=databricks&logoColor=white)
+![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
+![C](https://img.shields.io/badge/C-%2300599C.svg?style=for-the-badge&logo=c&logoColor=white)
+![CSS3](https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white)
+![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
+![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)
+![PowerShell](https://img.shields.io/badge/PowerShell-%235391FE.svg?style=for-the-badge&logo=powershell&logoColor=white)
+![Vercel](https://img.shields.io/badge/vercel-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazon-aws&logoColor=white)
+![Google Cloud](https://img.shields.io/badge/GoogleCloud-%234285F4.svg?style=for-the-badge&logo=google-cloud&logoColor=white)
+![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)
+![Next JS](https://img.shields.io/badge/Next-black?style=for-the-badge&logo=next.js&logoColor=white)
+![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Figma](https://img.shields.io/badge/figma-%23F24E1E.svg?style=for-the-badge&logo=figma&logoColor=white)
+![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white)
+![MicrosoftSQLServer](https://img.shields.io/badge/Microsoft%20SQL%20Server-CC2927?style=for-the-badge&logo=microsoft%20sql%20server&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
+![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-039BE5?style=for-the-badge&logo=Firebase&logoColor=white)
+![Notion](https://img.shields.io/badge/Notion-%23000000.svg?style=for-the-badge&logo=notion&logoColor=white)
+![Python](https://img.shields.io/badge/python-%2314354C.svg?style=for-the-badge&logo=python&logoColor=white)
+![Arduino](https://img.shields.io/badge/arduino-%2300979D.svg?style=for-the-badge&logo=arduino&logoColor=white)
+
+
+
+
+
+<p align="center">
+  <img src="./assets/code-pet.svg" alt="My code pet and GitHub stats" width="100%" />
+</p>
+<p align="center"><sub>My pet grows with my real contributions: a 13-week streak fills its meter, a year of steady work makes it glow, and two quiet weeks put it to sleep.</sub></p>

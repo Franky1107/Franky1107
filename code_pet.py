@@ -1,4 +1,4 @@
-"""Render assets/code-pet.svg from live GitHub data.
+"""Render assets/code-pet.svg (profile + pet) and assets/code-stats.svg (stats + languages).
 
 Usage: GH_TOKEN=... python code_pet.py <login>
        python code_pet.py --fixture data.json   (offline render for testing)
@@ -92,72 +92,15 @@ def card(x, y, w, h, body, label=None):
     return f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="16" fill="{CARD}" fill-opacity=".86" stroke="{LINE}"/>{lbl}{body}'
 
 
-def render(user, s):
+def wrap(user, parts, h, footer=False):
+    """Wrap card markup in one SVG with the fire gradient background."""
     esc = lambda t: html.escape(t or "", quote=True)
     W = 800
-    out = []
-
-    # 1. pet card
-    level = s["active_13"]
-    mood = "asleep · a commit wakes it" if s["asleep"] else f'{s["stage"]} · {s["streak"]}-day streak'
-    glow = f'<circle cx="150" cy="140" r="78" fill="{TEAL}" opacity=".18" class="pulse"/>' if s["glow"] else ""
-    zzz = (f'<text x="230" y="80" class="zzz" fill="{MUTED}">z</text>'
-           f'<text x="246" y="62" class="zzz d2" fill="{MUTED}">Z</text>') if s["asleep"] else ""
-    grid = []
-    for wi, w in enumerate(s["grid"]):
-        for di, d in enumerate(w["contributionDays"]):
-            c = d["contributionCount"]
-            lv = 0 if c == 0 else 1 if c < 3 else 2 if c < 6 else 3 if c < 10 else 4
-            grid.append(f'<rect x="{340 + wi * 30}" y="{56 + di * 22}" width="24" height="18" rx="4" fill="{LEVELS[lv]}"/>')
-    meter_w = 390 * level / 13
-    out.append(card(0, 0, W, 280,
-        f'<text x="24" y="32" class="lbl">CODE PET · LEVEL {level}</text>{glow}'
-        f'<g class="{"" if s["asleep"] else "bob"}">{sprite(s["stage"], s["asleep"], 90, 80)}</g>{zzz}'
-        f'<text x="150" y="232" class="small" text-anchor="middle">{esc(mood)}</text>'
-        + "".join(grid) +
-        f'<text x="340" y="232" class="small">{level} / 13 active weeks</text>'
-        f'<rect x="340" y="244" width="390" height="8" rx="4" fill="{LEVELS[0]}"/>'
-        f'<rect x="340" y="244" width="{meter_w:.0f}" height="8" rx="4" fill="{AMBER}"/>'))
-
-    # 2. profile card
-    y = 300
-    avatar = (f'<clipPath id="av"><circle cx="{W - 76}" cy="{y + 70}" r="44"/></clipPath>'
-              f'<image href="data:image/png;base64,{user.get("avatar_b64", "")}" x="{W - 120}" y="{y + 26}" '
-              f'width="88" height="88" clip-path="url(#av)"/>') if user.get("avatar_b64") else ""
-    bio = esc((user.get("bio") or "")[:70])
-    out.append(card(0, y, W, 140,
-        f'<text x="24" y="{y + 32}" class="lbl">PROFILE</text>'
-        f'<text x="24" y="{y + 76}" class="big">{esc(user.get("name") or user["login"])}</text>'
-        f'<text x="24" y="{y + 102}" class="small">@{esc(user["login"])}</text>'
-        f'<text x="24" y="{y + 124}" class="small">{bio}</text>{avatar}'))
-
-    # 3. two stat cards
-    y = 460
-    for i, (lbl, val, sub) in enumerate([
-        ("CONTRIBUTIONS", f'{s["year_total"]:,}', "in the last year"),
-        ("REPOS · STARS", f'{user["repositories"]["totalCount"]} · {s["stars"]}', f'{user["followers"]["totalCount"]} followers'),
-    ]):
-        x = i * 410
-        out.append(card(x, y, 390, 120,
-            f'<text x="{x + 24}" y="{y + 32}" class="lbl">{lbl}</text>'
-            f'<text x="{x + 24}" y="{y + 80}" class="big">{val}</text>'
-            f'<text x="{x + 24}" y="{y + 104}" class="small">{sub}</text>'))
-
-    # 4. languages
-    y = 600
-    bars = []
-    for i, (name, color, share) in enumerate(s["langs"]):
-        by = y + 56 + i * 30
-        bars.append(f'<text x="24" y="{by + 12}" class="small">{esc(name)}</text>'
-                    f'<rect x="160" y="{by}" width="560" height="14" rx="7" fill="{LEVELS[0]}"/>'
-                    f'<rect x="160" y="{by}" width="{max(560 * share, 8):.0f}" height="14" rx="7" fill="{color}"/>'
-                    f'<text x="{W - 24}" y="{by + 12}" class="small" text-anchor="end">{share:.0%}</text>')
-    lang_h = 76 + 30 * len(s["langs"])
-    out.append(card(0, y, W, lang_h, f'<text x="24" y="{y + 32}" class="lbl">TOP LANGUAGES</text>' + "".join(bars)))
-
-    H = y + lang_h + 76  # 20px outer padding + footer
+    H = h + (76 if footer else 40)  # 20px padding each side (+ footer line)
     stamp = dt.date.today().strftime("%d %b %Y")
-    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="{W + 40}" height="{H}" viewBox="0 0 {W + 40} {H}" role="img" aria-label="Code pet and GitHub stats for {esc(user["login"])}">
+    foot = (f'<text x="20" y="{H - 16}" class="small" style="fill:{INK}">updated {stamp} · fed by real contributions</text>'
+            if footer else "")
+    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="{W + 40}" height="{H}" viewBox="0 0 {W + 40} {H}" role="img" aria-label="GitHub stats for {esc(user["login"])}">
 <style>
 text{{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:{INK}}}
 .lbl{{font-size:11px;letter-spacing:2px;fill:{MUTED}}} .small{{font-size:13px;fill:{MUTED}}}
@@ -168,9 +111,77 @@ text{{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:{INK
 </style>
 <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">{"".join(f'<stop offset="{o}" stop-color="{c}"/>' for o, c in GRADIENT)}</linearGradient></defs>
 <rect width="{W + 40}" height="{H}" rx="20" fill="url(#bg)"/>
-<g transform="translate(20 20)">{"".join(out)}</g>
-<text x="20" y="{H - 16}" class="small" style="fill:{INK}">updated {stamp} · fed by real contributions</text>
+<g transform="translate(20 20)">{"".join(parts)}</g>
+{foot}
 </svg>'''
+
+
+def render(user, s):
+    """Return (top SVG: profile + pet, bottom SVG: stats + languages)."""
+    esc = lambda t: html.escape(t or "", quote=True)
+    W = 800
+
+    # profile card
+    y = 0
+    avatar = (f'<clipPath id="av"><circle cx="{W - 76}" cy="{y + 70}" r="44"/></clipPath>'
+              f'<image href="data:image/png;base64,{user.get("avatar_b64", "")}" x="{W - 120}" y="{y + 26}" '
+              f'width="88" height="88" clip-path="url(#av)"/>') if user.get("avatar_b64") else ""
+    bio = esc((user.get("bio") or "")[:70])
+    top = [card(0, y, W, 140,
+        f'<text x="24" y="{y + 32}" class="lbl">PROFILE</text>'
+        f'<text x="24" y="{y + 76}" class="big">{esc(user.get("name") or user["login"])}</text>'
+        f'<text x="24" y="{y + 102}" class="small">@{esc(user["login"])}</text>'
+        f'<text x="24" y="{y + 124}" class="small">{bio}</text>{avatar}')]
+
+    # pet card
+    y = 160
+    level = s["active_13"]
+    mood = "asleep · a commit wakes it" if s["asleep"] else f'{s["stage"]} · {s["streak"]}-day streak'
+    glow = f'<circle cx="150" cy="{y + 140}" r="78" fill="{TEAL}" opacity=".18" class="pulse"/>' if s["glow"] else ""
+    zzz = (f'<text x="230" y="{y + 80}" class="zzz" fill="{MUTED}">z</text>'
+           f'<text x="246" y="{y + 62}" class="zzz d2" fill="{MUTED}">Z</text>') if s["asleep"] else ""
+    grid = []
+    for wi, w in enumerate(s["grid"]):
+        for di, d in enumerate(w["contributionDays"]):
+            c = d["contributionCount"]
+            lv = 0 if c == 0 else 1 if c < 3 else 2 if c < 6 else 3 if c < 10 else 4
+            grid.append(f'<rect x="{340 + wi * 30}" y="{y + 56 + di * 22}" width="24" height="18" rx="4" fill="{LEVELS[lv]}"/>')
+    meter_w = 390 * level / 13
+    top.append(card(0, y, W, 280,
+        f'<text x="24" y="{y + 32}" class="lbl">CODE PET · LEVEL {level}</text>{glow}'
+        f'<g class="{"" if s["asleep"] else "bob"}">{sprite(s["stage"], s["asleep"], 90, y + 80)}</g>{zzz}'
+        f'<text x="150" y="{y + 232}" class="small" text-anchor="middle">{esc(mood)}</text>'
+        + "".join(grid) +
+        f'<text x="340" y="{y + 232}" class="small">{level} / 13 active weeks</text>'
+        f'<rect x="340" y="{y + 244}" width="390" height="8" rx="4" fill="{LEVELS[0]}"/>'
+        f'<rect x="340" y="{y + 244}" width="{meter_w:.0f}" height="8" rx="4" fill="{AMBER}"/>'))
+
+    # two stat cards
+    y = 0
+    bottom = []
+    for i, (lbl, val, sub) in enumerate([
+        ("CONTRIBUTIONS", f'{s["year_total"]:,}', "in the last year"),
+        ("REPOS · STARS", f'{user["repositories"]["totalCount"]} · {s["stars"]}', f'{user["followers"]["totalCount"]} followers'),
+    ]):
+        x = i * 410
+        bottom.append(card(x, y, 390, 120,
+            f'<text x="{x + 24}" y="{y + 32}" class="lbl">{lbl}</text>'
+            f'<text x="{x + 24}" y="{y + 80}" class="big">{val}</text>'
+            f'<text x="{x + 24}" y="{y + 104}" class="small">{sub}</text>'))
+
+    # languages
+    y = 140
+    bars = []
+    for i, (name, color, share) in enumerate(s["langs"]):
+        by = y + 56 + i * 30
+        bars.append(f'<text x="24" y="{by + 12}" class="small">{esc(name)}</text>'
+                    f'<rect x="160" y="{by}" width="560" height="14" rx="7" fill="{LEVELS[0]}"/>'
+                    f'<rect x="160" y="{by}" width="{max(560 * share, 8):.0f}" height="14" rx="7" fill="{color}"/>'
+                    f'<text x="{W - 24}" y="{by + 12}" class="small" text-anchor="end">{share:.0%}</text>')
+    lang_h = 76 + 30 * len(s["langs"])
+    bottom.append(card(0, y, W, lang_h, f'<text x="24" y="{y + 32}" class="lbl">TOP LANGUAGES</text>' + "".join(bars)))
+
+    return wrap(user, top, 440), wrap(user, bottom, y + lang_h, footer=True)
 
 
 if __name__ == "__main__":
@@ -180,6 +191,9 @@ if __name__ == "__main__":
         user = fetch(sys.argv[1])
     os.makedirs("assets", exist_ok=True)
     s = stats(user, dt.date.today())
+    top, bottom = render(user, s)
     with open("assets/code-pet.svg", "w", encoding="utf-8") as f:
-        f.write(render(user, s))
+        f.write(top)
+    with open("assets/code-stats.svg", "w", encoding="utf-8") as f:
+        f.write(bottom)
     print(f'stage={s["stage"]} asleep={s["asleep"]} level={s["active_13"]} streak={s["streak"]}')
